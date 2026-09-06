@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: selection
+      POSTGRES_USER: selection
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "effective_cache_size=1536MB", "-c", "max_connections=80"]
+    volumes:
+      - selection-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U selection -d selection"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 768m
+    cpus: 2.0
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 6754
+      DATABASE_URL: postgres://selection:${POSTGRES_PASSWORD}@postgres:5432/selection
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_TOTP_SECRET: ${ADMIN_TOTP_SECRET:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      DB_POOL_MAX: ${DB_POOL_MAX:-16}
+    ports:
+      - "127.0.0.1:6754:6754"
+    mem_limit: 256m
+    cpus: 2.0
+
+volumes:
+  selection-postgres:
