@@ -73,7 +73,7 @@ function Login({ onLogin }: { onLogin: (me: Me) => void }) {
       </section>
     </div>
     <p className="muted">忘记密码请联系管理员。</p>
-    <footer className="auth-footer">Powered By Cloudflare &amp; Rainyun</footer>
+    <footer className="auth-footer">Lightweight Enrollment</footer>
   </main>;
 }
 
